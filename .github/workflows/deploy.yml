@@ -1,0 +1,31 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main  # O reemplaza por "master" si usas esa rama
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to GCP VM
+        run: |
+          ssh -o StrictHostKeyChecking=no sebjardo@34.121.79.94 << 'EOF'
+            cd ~/project-final/fuudi
+            git pull origin main
+            npm install
+            npm run build
+            sudo rm -rf /var/www/html/*
+            sudo cp -r build/* /var/www/html/
+            echo "🚀 Deploy completo"
+          EOF
